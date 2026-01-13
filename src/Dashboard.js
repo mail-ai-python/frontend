@@ -15,16 +15,23 @@ function Dashboard() {
 
   // 1. Fetch Data on Load
   useEffect(() => {
+    const fetchStatus = async () => {
+      const res = await axios.post(`${BACKEND_URL}/api/check-user`, { email });
+      setIsActive(res.data.is_active);
+    };
+
+    const fetchLogs = async () => {
+      setRefreshing(true);
+      const res = await axios.get(`${BACKEND_URL}/api/logs/${email}`);
+      setLogs(res.data);
+      setRefreshing(false);
+    };
+
     if (email) {
       fetchStatus();
       fetchLogs();
     }
   }, [email]);
-
-  const fetchStatus = async () => {
-    const res = await axios.post(`${BACKEND_URL}/api/check-user`, { email });
-    setIsActive(res.data.is_active);
-  };
 
   const fetchLogs = async () => {
     setRefreshing(true);
