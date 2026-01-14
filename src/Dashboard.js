@@ -12,12 +12,14 @@ function Dashboard() {
   const [isActive, setIsActive] = useState(false);
   const [logs, setLogs] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [prompt, setPrompt] = useState("");
+  const [saving, setSaving] = useState(false);
   // 1. Fetch Data on Load
   useEffect(() => {
     const fetchStatus = async () => {
       const res = await axios.post(`${BACKEND_URL}/api/check-user`, { email });
       setIsActive(res.data.is_active);
+      setPrompt(res.data.custom_prompt || "");
     };
 
     const fetchLogs = async () => {
@@ -43,6 +45,13 @@ function Dashboard() {
   const toggleStatus = async () => {
     const res = await axios.post(`${BACKEND_URL}/api/user/${email}/toggle`);
     setIsActive(res.data.is_active);
+  };
+
+  const handleSavePrompt = async () => {
+    setSaving(true);
+    await axios.post(`${BACKEND_URL}/api/user/prompt`, { email, prompt });
+    setSaving(false);
+    alert("Prompt saved successfully!");
   };
 
   if (!email) return <div className="app-container"><h1>Please Login First</h1></div>;
@@ -73,6 +82,21 @@ function Dashboard() {
             }}
           >
             {isActive ? "🛑 STOP AGENT" : "▶ START AGENT"}
+          </button>
+        </div>
+
+        {/* PROMPT SECTION */}
+
+        <div style={{ textAlign: 'left', marginBottom: '30px' }}>
+          <h3>Custom Prompt</h3>
+          <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Enter your custom prompt here. Use {context} and {email_content} as placeholders."
+              style={{ width: '100%', minHeight: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', boxSizing: 'border-box' }}
+          />
+          <button onClick={handleSavePrompt} disabled={saving} style={{ marginTop: '10px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#4285F4', color: 'white', cursor: 'pointer' }}>
+            {saving ? "Saving..." : "Save Prompt"}
           </button>
         </div>
 
