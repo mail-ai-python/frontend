@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import "./App.css";
@@ -14,27 +14,27 @@ function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [saving, setSaving] = useState(false);
-  // 1. Fetch Data on Load
-  useEffect(() => {
-      if (email) {
-        fetchStatus();
-        fetchLogs();
-      }
-    }, [email]);
-    const fetchStatus = async () => {
-      const res = await axios.post(`${BACKEND_URL}/api/check-user`, { email });
-      setIsActive(res.data.is_active);
-      setPrompt(res.data.custom_prompt || "");
-    };
 
-    
+  const fetchStatus = useCallback(async () => {
+    const res = await axios.post(`${BACKEND_URL}/api/check-user`, { email });
+    setIsActive(res.data.is_active);
+    setPrompt(res.data.custom_prompt || "");
+  }, [email]);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setRefreshing(true);
     const res = await axios.get(`${BACKEND_URL}/api/logs/${email}`);
     setLogs(res.data);
     setRefreshing(false);
-  };
+  }, [email]);
+
+  // 1. Fetch Data on Load
+  useEffect(() => {
+    if (email) {
+      fetchStatus();
+      fetchLogs();
+    }
+  }, [email, fetchStatus, fetchLogs]);
 
   const toggleStatus = async () => {
     const res = await axios.post(`${BACKEND_URL}/api/user/${email}/toggle`);
