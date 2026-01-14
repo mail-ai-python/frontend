@@ -24,7 +24,9 @@ function Login() {
         navigate(`/dashboard?email=${email}`);
       } else {
         // CASE B: NEW USER -> Go to Google OAuth
-        const authRes = await axios.get(`${BACKEND_URL}/login?email_hint=${email}`);
+        // We tell the backend where to redirect back to after success.
+        const redirectUri = `${window.location.origin}/success`;
+        const authRes = await axios.get(`${BACKEND_URL}/login?email_hint=${email}&redirect_uri=${encodeURIComponent(redirectUri)}`);
         if (authRes.data.auth_url) {
           window.location.href = authRes.data.auth_url;
         }
