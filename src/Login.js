@@ -24,9 +24,17 @@ function Login() {
         navigate(`/dashboard?email=${email}`);
       } else {
         // CASE B: NEW USER -> Go to Google OAuth
-        const authRes = await axios.get(`${BACKEND_URL}/login?email_hint=${email}`);
-        if (authRes.data.auth_url) {
+        const redirectUri = `${window.location.origin}/success`;
+        const authRes = await axios.get(`${BACKEND_URL}/login?email_hint=${email}&redirect_uri=${encodeURIComponent(redirectUri)}`);
+        
+        // --- DEBUGGING ---
+        console.log("Received response from backend:", authRes.data);
+
+        if (authRes.data && authRes.data.auth_url) {
           window.location.href = authRes.data.auth_url;
+        } else {
+          // This will now alert you if the auth_url is missing.
+          alert("Backend did not provide an authentication URL. Check the browser console for details.");
         }
       }
     } catch (err) {
